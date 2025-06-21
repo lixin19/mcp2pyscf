@@ -9,4 +9,6 @@ dependencies = [
     "mcp[cli]>=1.9.4",
     "numpy>=2.3.1",
     "pandas>=2.3.0",
+    "pyscf>=2.9.0",
+    "rdkit>=2025.3.3",
 ]
