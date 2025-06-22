@@ -2,7 +2,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import TextContent, ImageContent, BlobResourceContents
 import logging
 from typing import Literal, List, Dict, Union # Import new types
-from pyscf_tools import smiles_to_xyz, run_bond_stretch_scan
+from pyscf_tools import smiles_to_xyz, run_bond_stretch_scan, optimize_molecule, generate_3d_viewer_html
 from plot import plot_energy_scan # Import new functions
 import io
 import base64
@@ -83,7 +83,7 @@ def generate_pyscf_geom_input(smiles_string: str) -> str:
     except ValueError as e:
         return f"Error: {e}. Please provide a valid SMILES string."
 
-# --- NEW TOOL FOR BOND STRETCH SCAN ---
+# --- FOR BOND STRETCH SCAN ---
 @mcp.tool()
 def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_idx: int,
                                     start_dist: float, end_dist: float, num_points: int, basis: str = "sto-3g") -> Dict[str, List[float]]:
@@ -110,12 +110,12 @@ def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_i
         return {"error": str(e), "bond_lengths": [], "energies": []}
 
 
-# --- NEW TOOL FOR PLOTTING ---
+# --- FOR PLOTTING ---
 @mcp.tool()
 def plot_energy_scan_image_mcp(bond_lengths: List[float], energies: List[float],
                                 title: str = "Energy vs. Bond Length Scan",
                                 xlabel: str = "Bond Length (Angstroms)",
-                                ylabel: str = "Energy (Hartree)") -> {str, str}:
+                                ylabel: str = "Energy (Hartree)") -> ImageContent:
     """
     Generates a plot of energy versus bond length from provided data and returns it as a Base64 encoded PNG image.
 
@@ -144,7 +144,64 @@ def plot_energy_scan_image_mcp(bond_lengths: List[float], energies: List[float],
         return ImageContent(
             type="image", data=img_base64, mimeType="image/png")
     except Exception as e:
-        return {"error": str(e), "image_base64": "", "format": ""}
+        return ImageContent(
+            type="", data=None, mimeType="")
+    #    return {"error": str(e), "image_base64": "", "format": ""}
+
+# --- QM OPTIMIZATION TOOL ---
+@mcp.tool()
+def optimize_molecule_mcp(smiles_string: str, maxsteps: int = 100) -> TextContent:
+    """
+    Performs a quantum mechanical geometry optimization for a molecule using PySCF with HF/STO-3G and Geometric.
+
+    Args:
+        smiles_string: The SMILES string of the molecule.
+        maxsteps: Maximum number of optimization steps (default: 100).
+
+    Returns:
+        A dictionary containing:
+        - 'optimized_energy': The final optimized energy in Hartree.
+        - 'optimized_geometry_xyz': The optimized geometry as an XYZ string.
+        - 'method': "PySCF/HF/STO-3G + Geometric Optimization"
+    """
+    try:
+        results = optimize_molecule(smiles_string, maxsteps)
+        return TextContent(
+            type="text",
+            text=results
+        )
+    except Exception as e:
+        return TextContent(
+            type="text",
+            text=str(e)
+        )
+
+
+# --- TOOL FOR 3D MOLECULAR VISUALIZATION ---
+@mcp.tool()
+def visualize_molecule_3d_mcp(xyz_string: str, title: str = "Molecular Visualization") -> Dict[str, str]:
+    """
+    Generates an HTML string with an embedded 3Dmol.js viewer for a given molecular xyz string.
+    The function will first generate an 3D geometry visualization.
+
+    Args:
+        xyz_string: The string of the xyz geometry of molecule.
+        title: Optional title for the visualization (default: "Molecular Visualization").
+
+    Returns:
+        A dictionary containing:
+        - 'html_content': The complete HTML for the 3D viewer as a string.
+        - 'format': The format of the content (e.g., 'html').
+    """
+    try:
+        # Use the RDKit 3D geometry generation for visualization
+        #rdkit_geom_results = generate_rdkit_3d_geometry(smiles_string)
+        #xyz_string = rdkit_geom_results['optimized_geometry_xyz'] # Get XYZ from RDKit function
+
+        html_content = generate_3d_viewer_html(xyz_string, title)
+        return {"html_content": html_content, "format": "html"}
+    except Exception as e:
+        return {"error": str(e), "html_content": "", "format": ""}
 
 
 
