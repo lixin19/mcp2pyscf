@@ -1,6 +1,11 @@
 from mcp.server.fastmcp import FastMCP
+from mcp.server.models import ToolDefinition, ToolParameter
 from mcp.types import TextContent, ImageContent, BlobResourceContents
 import logging
+from typing import Literal, List, Dict, Union # Import new types
+from pyscf_tools import smiles_to_xyz, run_bond_stretch_scan
+from plot import plot_energy_scan # Import new functions
+
 
 # Set up logging (this just prints messages to your terminal for debugging)
 logging.basicConfig(
@@ -11,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 # Create the MCP server object
 mcp = FastMCP()
-
 
 @mcp.tool()
 def pyscf_rhf_energy(atom, basis):
@@ -61,6 +65,60 @@ def scan_pes_rhf():
         print('%.2f  %.8f' % (b, ehf[i]))
 
     return TextContent(type="text", text=str(ehf))
+
+@mcp.tool(
+    name="generate_pyscf_geom_input",
+    description="Generates a geometry string in PySCF format for a PySCF calculation from a SMILES string.",
+    parameters=[
+        ToolParameter(
+            name="smiles_string",
+            type="string",
+            description="The SMILES string of the molecule (e.g., 'CCO' for ethanol).",
+            required=True,
+        )
+    ]
+)
+def generate_pyscf_geom_input(smiles_string: str) -> str:
+    """
+    MCP Tool wrapper for smiles_to_xyz.
+    """
+    try:
+        return smiles_to_xyz(smiles_string)
+    except ValueError as e:
+        return f"Error: {e}. Please provide a valid SMILES string."
+
+# --- NEW TOOL FOR BOND STRETCH SCAN ---
+@mcp.tool(
+    name="run_bond_stretch_calculation",
+    description="Performs a series of PySCF Hartree-Fock/STO-3G energy calculations "
+                "for varying a specified bond length in a molecule and returns bond lengths and energies.",
+    parameters=[
+        ToolParameter(name="smiles_string", type="string", description="SMILES string of the molecule.", required=True),
+        ToolParameter(name="atom1_idx", type="integer", description="0-indexed ID of the first atom in the bond.", required=True),
+        ToolParameter(name="atom2_idx", type="integer", description="0-indexed ID of the second atom in the bond.", required=True),
+        ToolParameter(name="start_dist", type="number", description="Starting bond distance in Angstroms.", required=True),
+        ToolParameter(name="end_dist", type="number", description="Ending bond distance in Angstroms.", required=True),
+        ToolParameter(name="num_points", type="integer", description="Number of points to calculate in the scan.", required=True)
+    ],
+    # Important: The return type must be JSON serializable.
+    returns=ToolParameter(
+        type="object",
+        properties={
+            "bond_lengths": ToolParameter(type="array", items={"type": "number"}, description="List of bond lengths in Angstroms."),
+            "energies": ToolParameter(type="array", items={"type": "number"}, description="List of corresponding energies in Hartree.")
+        },
+        description="A dictionary containing lists of bond lengths and energies from the scan."
+    )
+)
+def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_idx: int,
+                                    start_dist: float, end_dist: float, num_points: int) -> Dict[str, List[float]]:
+    try:
+        # Call your actual PySCF function
+        results = run_bond_stretch_scan(smiles_string, atom1_idx, atom2_idx, start_dist, end_dist, num_points)
+        return results
+    except Exception as e:
+        return {"error": str(e), "bond_lengths": [], "energies": []}
+
 
 # --- NEW TOOL FOR PLOTTING ---
 @mcp.tool(

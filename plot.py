@@ -1,7 +1,8 @@
 ###
 # plot the data
 ###
-
+import io
+import base64
 import matplotlib.pyplot as plt
 import numpy as np
 
