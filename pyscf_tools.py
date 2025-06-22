@@ -282,7 +282,7 @@ H 0.978992 0.264303 -0.380303
         methane_3d_html = generate_3d_viewer_html(optimized_methane['optimized_geometry_xyz'], "Optimized Methane 3D View")
         with open("optimized_methane_3d.html", "w") as f:
             f.write(methane_3d_html)
-        print(f"Optimized Methane 3D viewer HTML saved. Opening in browser...")
+        print(f"Optimized Methane 3D viewer HTML saved in /Users/lixinlu/Documents/mcp_server/optimized_methane_3d.html. Please open it in browser...")
         webbrowser.open("optimized_methane_3d.html")
 
     except Exception as e:

@@ -179,7 +179,7 @@ def optimize_molecule_mcp(smiles_string: str, maxsteps: int = 100) -> TextConten
 
 # --- TOOL FOR 3D MOLECULAR VISUALIZATION ---
 @mcp.tool()
-def visualize_molecule_3d_mcp(xyz_string: str, title: str = "Molecular Visualization") -> Dict[str, str]:
+def visualize_molecule_3d_mcp(xyz_string: str, title: str = "Molecular Visualization") -> TextContent:
     """
     Generates an HTML string with an embedded 3Dmol.js viewer for a given molecular xyz string.
     The function will first generate an 3D geometry visualization.
@@ -199,9 +199,18 @@ def visualize_molecule_3d_mcp(xyz_string: str, title: str = "Molecular Visualiza
         #xyz_string = rdkit_geom_results['optimized_geometry_xyz'] # Get XYZ from RDKit function
 
         html_content = generate_3d_viewer_html(xyz_string, title)
-        return {"html_content": html_content, "format": "html"}
+        with open("optimized_geom_3d.html", "w") as f:
+            f.write(html_content)
+        output = f"Optimized Methane 3D viewer HTML saved in /Users/lixinlu/Documents/mcp_server/optimized_methane_3d.html. Please open it in browser..."
+        return TextContent(
+            type="text",
+            text=output
+        )
     except Exception as e:
-        return {"error": str(e), "html_content": "", "format": ""}
+        return TextContent(
+            type="text",
+            text=str(e)
+        )
 
 
 
