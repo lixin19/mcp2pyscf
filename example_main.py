@@ -39,55 +39,6 @@ def get_image_of_flower():
 
     return ImageContent(data=image_base64, mimeType="image/png", type="image")
 
-@mcp.tool()
-def pyscf_rhf_energy(atom, basis):
-    """
-    Run a restricted Hartree-Fock calculation (RHF) with PySCF
-    
-    input:
-        atom: the geometry of the molecule in Angstrom
-    """
-    from pyscf import gto, scf
-
-    mol = gto.M(
-        #atom = 'H 0 0 0; H 0 0 1.1',  # in Angstrom
-        atom=atom,
-        basis = basis,
-        symmetry = True,
-    )
-    mf = scf.HF(mol)
-    mf.kernel()
-    e_tot = mf.e_tot
-    #return e_tot
-    return TextContent(type="text", text=str(e_tot))
-
-@mcp.tool()
-def scan_pes_rhf():
-    """
-    Scan a potential energy curve with RHF
-    """
-    import numpy as np
-    from pyscf import scf
-    from pyscf import gto
-
-    ehf = []
-
-    # hard code basis for now
-    basis = "sto-3g"
-        
-    for b in np.arange(0.7, 1.51, 0.1):
-        # hard code molecule for now
-        atom = f"H 0 0 0; H 0 0 {b}"  # in Angstrom
-
-        result = pyscf_rhf_energy(atom,basis)
-        ehf.append(float(result.text))  # convert string back to float
-
-
-    print('R     E(HF)')
-    for i, b in enumerate(np.arange(0.7, 1.51, 0.1)):
-        print('%.2f  %.8f' % (b, ehf[i]))
-
-    return TextContent(type="text", text=str(ehf))
 
 
 # This is the main entry point for your server
