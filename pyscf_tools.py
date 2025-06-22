@@ -8,6 +8,7 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from pyscf import gto, scf
+from plot import plot_energy_scan
 
 def smiles_to_xyz(smiles_string: str) -> str:
     """
@@ -111,13 +112,15 @@ def run_bond_stretch_scan(smiles_string: str, atom1_idx: int, atom2_idx: int,
 if __name__ == "__main__":
     # Test bond stretching
     try:
+        print("\n--- Testing Bond Stretch Scan and Plotting ---")
         scan_results = run_bond_stretch_scan(
             smiles_string="O", # Water
-            atom1_idx=0, atom2_idx=1, # O-H bond
+            atom1_idx=0, atom2_idx=1, # O-H bond. RDKit usually has O=0, H1=1, H2=2
             start_dist=0.8, end_dist=1.5, num_points=10
         )
-        print("\nBond Scan Results:")
-        print(scan_results)
+        print("\nBond Scan Results (first few):")
+        print(f"  Lengths: {scan_results['bond_lengths'][:3]}...")
+        print(f"  Energies: {scan_results['energies'][:3]}...")
 
         # Test plotting
         img_b64 = plot_energy_scan(
@@ -126,13 +129,16 @@ if __name__ == "__main__":
             title="O-H Bond Stretch in Water (HF/STO-3G)"
         )
         print(f"\nGenerated Base64 Image (first 50 chars): {img_b64[:50]}...")
-        # To view locally, save this to an HTML file:
-        # with open("plot_demo.html", "w") as f:
-        #     f.write(f'<img src="data:image/png;base64,{img_b64}"/>')
-        # print("Image saved to plot_demo.html. Open in browser to view.")
+
+        # THIS IS THE CRUCIAL PART TO TEST:
+        html_file_path = "plot_demo.html"
+        with open(html_file_path, "w") as f:
+            f.write(f'<!DOCTYPE html><html><body><img src="data:image/png;base64,{img_b64}"/></body></html>')
+        print(f"Image saved to {html_file_path}. Open this file in your web browser to view the plot.")
 
     except Exception as e:
         print(f"Error during bond stretch/plot testing: {e}")
+
 
     # (Original smiles_to_pyscf_input test can remain here too)
     print("\n--- Original PySCF Input Test ---")

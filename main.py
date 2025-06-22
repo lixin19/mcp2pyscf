@@ -130,7 +130,8 @@ def plot_energy_scan_image_mcp(bond_lengths: List[float], energies: List[float],
     try:
         # Call your actual plotting function
         img_b64 = plot_energy_scan(bond_lengths, energies, title, xlabel, ylabel)
-        return {"image_base64": img_b64, "format": "png"}
+        return ImageContent(
+            type="image", data=img_base64, mimeType="image/png")
     except Exception as e:
         return {"error": str(e), "image_base64": "", "format": ""}
 
