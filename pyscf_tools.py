@@ -42,7 +42,7 @@ def smiles_to_xyz(smiles_string: str) -> str:
 
 # --- NEW FUNCTION FOR BOND STRETCHING ---
 def run_bond_stretch_scan(smiles_string: str, atom1_idx: int, atom2_idx: int,
-                          start_dist: float, end_dist: float, num_points: int) -> dict:
+                          start_dist: float, end_dist: float, num_points: int, basis: str = "sto-3g") -> dict:
     """
     Performs a bond stretching scan (energy vs. bond length) for a specified bond
     using PySCF with HF/STO-3G.
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         scan_results = run_bond_stretch_scan(
             smiles_string="O", # Water
             atom1_idx=0, atom2_idx=1, # O-H bond
-            start_dist=0.8, end_dist=1.5, num_points=10
+            start_dist=0.8, end_dist=1.5, num_points=10, basis='sto-3g'
         )
         print("\nBond Scan Results:")
         print(scan_results)

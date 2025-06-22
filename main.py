@@ -84,7 +84,7 @@ def generate_pyscf_geom_input(smiles_string: str) -> str:
 # --- NEW TOOL FOR BOND STRETCH SCAN ---
 @mcp.tool()
 def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_idx: int,
-                                    start_dist: float, end_dist: float, num_points: int) -> Dict[str, List[float]]:
+                                    start_dist: float, end_dist: float, num_points: int, basis: str = "sto-3g") -> Dict[str, List[float]]:
     """
     Performs a series of PySCF Hartree-Fock/STO-3G energy calculations
     for varying a specified bond length in a molecule and returns bond lengths and energies.
@@ -102,7 +102,7 @@ def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_i
     """
     try:
         # Call your actual PySCF function
-        results = run_bond_stretch_scan(smiles_string, atom1_idx, atom2_idx, start_dist, end_dist, num_points)
+        results = run_bond_stretch_scan(smiles_string, atom1_idx, atom2_idx, start_dist, end_dist, num_points, basis)
         return results
     except Exception as e:
         return {"error": str(e), "bond_lengths": [], "energies": []}
