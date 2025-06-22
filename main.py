@@ -4,7 +4,9 @@ import logging
 from typing import Literal, List, Dict, Union # Import new types
 from pyscf_tools import smiles_to_xyz, run_bond_stretch_scan
 from plot import plot_energy_scan # Import new functions
-
+import io
+import base64
+import matplotlib.pyplot as plt
 
 # Set up logging (this just prints messages to your terminal for debugging)
 logging.basicConfig(
@@ -129,8 +131,18 @@ def plot_energy_scan_image_mcp(bond_lengths: List[float], energies: List[float],
     """
     try:
         # Call your actual plotting function
-        img_b64 = plot_energy_scan(bond_lengths, energies, title, xlabel, ylabel)
-        return {"image_base64": img_b64, "format": "png"}
+        fig = plot_energy_scan(bond_lengths, energies, title, xlabel, ylabel)
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format='png')
+        buffer.seek(0)  # Rewind the buffer to the beginning
+        img_bytes = buffer.getvalue()
+        #img_bytes = fig.to_image(format="png", scale=1)
+        img_base64 = base64.b64encode(img_bytes).decode("utf-8")
+        plt.close(fig)
+
+    #    img_b64 = plot_energy_scan(bond_lengths, energies, title, xlabel, ylabel)
+        return ImageContent(
+            type="image", data=img_base64, mimeType="image/png")
     except Exception as e:
         return {"error": str(e), "image_base64": "", "format": ""}
 
