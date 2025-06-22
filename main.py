@@ -1,5 +1,4 @@
 from mcp.server.fastmcp import FastMCP
-from mcp.server.models import ToolDefinition, ToolParameter
 from mcp.types import TextContent, ImageContent, BlobResourceContents
 import logging
 from typing import Literal, List, Dict, Union # Import new types
@@ -70,12 +69,7 @@ def scan_pes_rhf():
     name="generate_pyscf_geom_input",
     description="Generates a geometry string in PySCF format for a PySCF calculation from a SMILES string.",
     parameters=[
-        ToolParameter(
-            name="smiles_string",
-            type="string",
-            description="The SMILES string of the molecule (e.g., 'CCO' for ethanol).",
-            required=True,
-        )
+        {"name": "smiles_string", "type": "string", "description": "The SMILES string of the molecule (e.g., 'CCO' for ethanol).", "required": True}
     ]
 )
 def generate_pyscf_geom_input(smiles_string: str) -> str:
@@ -93,12 +87,12 @@ def generate_pyscf_geom_input(smiles_string: str) -> str:
     description="Performs a series of PySCF Hartree-Fock/STO-3G energy calculations "
                 "for varying a specified bond length in a molecule and returns bond lengths and energies.",
     parameters=[
-        ToolParameter(name="smiles_string", type="string", description="SMILES string of the molecule.", required=True),
-        ToolParameter(name="atom1_idx", type="integer", description="0-indexed ID of the first atom in the bond.", required=True),
-        ToolParameter(name="atom2_idx", type="integer", description="0-indexed ID of the second atom in the bond.", required=True),
-        ToolParameter(name="start_dist", type="number", description="Starting bond distance in Angstroms.", required=True),
-        ToolParameter(name="end_dist", type="number", description="Ending bond distance in Angstroms.", required=True),
-        ToolParameter(name="num_points", type="integer", description="Number of points to calculate in the scan.", required=True)
+        {"name": "smiles_string", "type": "string", "description": "SMILES string of the molecule.", "required": True},
+        {"name": "atom1_idx", "type": "integer", "description": "0-indexed ID of the first atom in the bond.", "required": True},
+        {"name": "atom2_idx", "type": "integer", "description": "0-indexed ID of the second atom in the bond.", "required": True},
+        {"name": "start_dist", "type": "number", "description": "Starting bond distance in Angstroms.", "required": True},
+        {"name": "end_dist", "type": "number", "description": "Ending bond distance in Angstroms.", "required": True},
+        {"name": "num_points", "type": "integer", "description": "Number of points to calculate in the scan.", "required": True}
     ],
     # Important: The return type must be JSON serializable.
     returns=ToolParameter(
@@ -125,11 +119,11 @@ def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_i
     name="plot_energy_scan_image",
     description="Generates a plot of energy versus bond length from provided data and returns it as a Base64 encoded PNG image.",
     parameters=[
-        ToolParameter(name="bond_lengths", type="array", items={"type": "number"}, description="List of bond lengths (x-axis data).", required=True),
-        ToolParameter(name="energies", type="array", items={"type": "number"}, description="List of corresponding energies (y-axis data).", required=True),
-        ToolParameter(name="title", type="string", description="Title of the plot.", required=False, default="Energy vs. Bond Length Scan"),
-        ToolParameter(name="xlabel", type="string", description="Label for the x-axis.", required=False, default="Bond Length (Angstroms)"),
-        ToolParameter(name="ylabel", type="string", description="Label for the y-axis.", required=False, default="Energy (Hartree)")
+        {"name": "bond_lengths", "type": "array", "items": {"type": "number"}, "description": "List of bond lengths (x-axis data).", "required": True},
+        {"name": "energies", "type": "array", "items": {"type": "number"}, "description": "List of corresponding energies (y-axis data).", "required": True},
+        {"name": "title", "type": "string", "description": "Title of the plot.", "required": False, "default": "Energy vs. Bond Length Scan"},
+        {"name": "xlabel", "type": "string", "description": "Label for the x-axis.", "required": False, "default": "Bond Length (Angstroms)"},
+        {"name": "ylabel", "type": "string", "description": "Label for the y-axis.", "required": False, "default": "Energy (Hartree)"}
     ],
     returns=ToolParameter(
         type="object",
