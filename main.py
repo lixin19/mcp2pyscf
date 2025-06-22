@@ -65,16 +65,16 @@ def scan_pes_rhf():
 
     return TextContent(type="text", text=str(ehf))
 
-@mcp.tool(
-    name="generate_pyscf_geom_input",
-    description="Generates a geometry string in PySCF format for a PySCF calculation from a SMILES string.",
-    parameters=[
-        {"name": "smiles_string", "type": "string", "description": "The SMILES string of the molecule (e.g., 'CCO' for ethanol).", "required": True}
-    ]
-)
+@mcp.tool()
 def generate_pyscf_geom_input(smiles_string: str) -> str:
     """
-    MCP Tool wrapper for smiles_to_xyz.
+    Generates a geometry string in PySCF format for a PySCF calculation from a SMILES string.
+
+    Args:
+        smiles_string: The SMILES string of the molecule (e.g., "CCO" for ethanol).
+
+    Returns:
+        A string containing the Python script for PySCF.
     """
     try:
         return smiles_to_xyz(smiles_string)
@@ -82,30 +82,24 @@ def generate_pyscf_geom_input(smiles_string: str) -> str:
         return f"Error: {e}. Please provide a valid SMILES string."
 
 # --- NEW TOOL FOR BOND STRETCH SCAN ---
-@mcp.tool(
-    name="run_bond_stretch_calculation",
-    description="Performs a series of PySCF Hartree-Fock/STO-3G energy calculations "
-                "for varying a specified bond length in a molecule and returns bond lengths and energies.",
-    parameters=[
-        {"name": "smiles_string", "type": "string", "description": "SMILES string of the molecule.", "required": True},
-        {"name": "atom1_idx", "type": "integer", "description": "0-indexed ID of the first atom in the bond.", "required": True},
-        {"name": "atom2_idx", "type": "integer", "description": "0-indexed ID of the second atom in the bond.", "required": True},
-        {"name": "start_dist", "type": "number", "description": "Starting bond distance in Angstroms.", "required": True},
-        {"name": "end_dist", "type": "number", "description": "Ending bond distance in Angstroms.", "required": True},
-        {"name": "num_points", "type": "integer", "description": "Number of points to calculate in the scan.", "required": True}
-    ],
-    # Important: The return type must be JSON serializable.
-    returns=ToolParameter(
-        type="object",
-        properties={
-            "bond_lengths": ToolParameter(type="array", items={"type": "number"}, description="List of bond lengths in Angstroms."),
-            "energies": ToolParameter(type="array", items={"type": "number"}, description="List of corresponding energies in Hartree.")
-        },
-        description="A dictionary containing lists of bond lengths and energies from the scan."
-    )
-)
+@mcp.tool()
 def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_idx: int,
                                     start_dist: float, end_dist: float, num_points: int) -> Dict[str, List[float]]:
+    """
+    Performs a series of PySCF Hartree-Fock/STO-3G energy calculations
+    for varying a specified bond length in a molecule and returns bond lengths and energies.
+
+    Args:
+        smiles_string: SMILES string of the molecule.
+        atom1_idx: 0-indexed ID of the first atom in the bond.
+        atom2_idx: 0-indexed ID of the second atom in the bond.
+        start_dist: Starting bond distance in Angstroms.
+        end_dist: Ending bond distance in Angstroms.
+        num_points: Number of points to calculate in the scan.
+
+    Returns:
+        A dictionary containing 'bond_lengths' (list of floats) and 'energies' (list of floats).
+    """
     try:
         # Call your actual PySCF function
         results = run_bond_stretch_scan(smiles_string, atom1_idx, atom2_idx, start_dist, end_dist, num_points)
@@ -115,29 +109,24 @@ def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_i
 
 
 # --- NEW TOOL FOR PLOTTING ---
-@mcp.tool(
-    name="plot_energy_scan_image",
-    description="Generates a plot of energy versus bond length from provided data and returns it as a Base64 encoded PNG image.",
-    parameters=[
-        {"name": "bond_lengths", "type": "array", "items": {"type": "number"}, "description": "List of bond lengths (x-axis data).", "required": True},
-        {"name": "energies", "type": "array", "items": {"type": "number"}, "description": "List of corresponding energies (y-axis data).", "required": True},
-        {"name": "title", "type": "string", "description": "Title of the plot.", "required": False, "default": "Energy vs. Bond Length Scan"},
-        {"name": "xlabel", "type": "string", "description": "Label for the x-axis.", "required": False, "default": "Bond Length (Angstroms)"},
-        {"name": "ylabel", "type": "string", "description": "Label for the y-axis.", "required": False, "default": "Energy (Hartree)"}
-    ],
-    returns=ToolParameter(
-        type="object",
-        properties={
-            "image_base64": ToolParameter(type="string", description="Base64 encoded PNG image data."),
-            "format": ToolParameter(type="string", description="Format of the image (e.g., 'png').")
-        },
-        description="A dictionary containing the Base64 encoded image and its format."
-    )
-)
+@mcp.tool()
 def plot_energy_scan_image_mcp(bond_lengths: List[float], energies: List[float],
                                 title: str = "Energy vs. Bond Length Scan",
                                 xlabel: str = "Bond Length (Angstroms)",
                                 ylabel: str = "Energy (Hartree)") -> Dict[str, str]:
+    """
+    Generates a plot of energy versus bond length from provided data and returns it as a Base64 encoded PNG image.
+
+    Args:
+        bond_lengths: List of bond lengths (x-axis data).
+        energies: List of energies (y-axis data).
+        title: Title of the plot.
+        xlabel: Label for the x-axis.
+        ylabel: Label for the y-axis.
+
+    Returns:
+        A dictionary containing 'image_base64' (Base64 encoded PNG image data) and 'format' (e.g., 'png').
+    """
     try:
         # Call your actual plotting function
         img_b64 = plot_energy_scan(bond_lengths, energies, title, xlabel, ylabel)

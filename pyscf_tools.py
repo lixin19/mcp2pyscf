@@ -4,6 +4,7 @@
 #   then add in geometry information
 ###
 
+import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from pyscf import gto, scf
