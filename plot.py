@@ -25,10 +25,10 @@ def plot_energy_scan(bond_lengths: list[float], energies: list[float],
     """
     fig = plt.figure(figsize=(10, 6))
     plt.plot(bond_lengths, energies, marker='o', linestyle='-', color='blue')
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.grid(True)
+    plt.title(title, fontsize=18)
+    plt.xlabel(xlabel, fontsize=16)
+    plt.ylabel(ylabel, fontsize=16)
+    #plt.grid(True)
     plt.tight_layout()
 
     # # Save plot to an in-memory binary stream

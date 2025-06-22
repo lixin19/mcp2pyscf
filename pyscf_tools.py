@@ -41,7 +41,7 @@ def smiles_to_xyz(smiles_string: str) -> str:
     return pyscf_atom_string
 
 
-# --- NEW FUNCTION FOR BOND STRETCHING ---
+# --- FUNCTION FOR BOND STRETCHING ---
 def run_bond_stretch_scan(smiles_string: str, atom1_idx: int, atom2_idx: int,
                           start_dist: float, end_dist: float, num_points: int, basis: str = "sto-3g") -> dict:
     """
@@ -107,6 +107,63 @@ def run_bond_stretch_scan(smiles_string: str, atom1_idx: int, atom2_idx: int,
         energies.append(mf.e_tot)
 
     return {"bond_lengths": bond_lengths, "energies": energies}
+
+# --- FUNCTION FOR GEOMETRY OPTIMIZATION ---
+def optimize_molecule(smiles_string: str) -> dict:
+    """
+    Performs a geometry optimization for a molecule using PySCF with HF/STO-3G.
+
+    Args:
+        smiles_string: The SMILES string of the molecule.
+
+    Returns:
+        A dictionary containing:
+        - 'optimized_energy': The final optimized energy in Hartree.
+        - 'optimized_geometry_xyz': The optimized geometry as an XYZ string.
+    """
+    # 1. Generate initial 3D geometry from SMILES using RDKit
+    mol_rdkit = Chem.MolFromSmiles(smiles_string)
+    if mol_rdkit is None:
+        raise ValueError(f"Invalid SMILES string: {smiles_string}")
+    mol_rdkit = Chem.AddHs(mol_rdkit)
+    AllChem.EmbedMolecule(mol_rdkit, AllChem.ETKDG())
+    AllChem.UFFOptimizeMolecule(mol_rdkit) # Initial classical optimization for a reasonable start
+
+    # Convert RDKit molecule to PySCF atom list format
+    # PySCF's optimize expects atom as a list of lists or an array
+    initial_atom_list = []
+    conf = mol_rdkit.GetConformer()
+    for i, atom in enumerate(mol_rdkit.GetAtoms()):
+        pos = conf.GetAtomPosition(i)
+        initial_atom_list.append([atom.GetSymbol(), pos.x, pos.y, pos.z])
+
+    mol_pyscf = gto.M(
+        atom = initial_atom_list,
+        basis = 'sto-3g'
+    )
+
+    # 2. Perform geometry optimization
+    # This creates a Gradients object (Gradients from an SCF object)
+    mf = scf.RHF(mol_pyscf).run(verbose=0) # Run initial SCF calculation
+    
+    # Use PySCF's built-in optimizer (Newton-Raphson by default)
+    # The .kernel() method of the Gradients object performs the optimization
+    optimized_mol = geom.optimize(mf) # Pass the mean-field object (mf) to geom.optimize
+
+    optimized_energy = optimized_mol.e_tot # The optimized molecule object has the final energy
+
+    # Convert optimized PySCF molecule geometry to XYZ string
+    optimized_geometry_xyz = f"{optimized_mol.natm}\n"
+    optimized_geometry_xyz += "Optimized geometry (HF/STO-3G)\n"
+    for i in range(optimized_mol.natm):
+        sym = optimized_mol.atom_symbol(i)
+        xyz = optimized_mol.atom_coord(i)
+        optimized_geometry_xyz += f"{sym} {xyz[0]:.6f} {xyz[1]:.6f} {xyz[2]:.6f}\n"
+
+    return {
+        "optimized_energy": optimized_energy,
+        "optimized_geometry_xyz": optimized_geometry_xyz
+    }
 
 # Example usage for the new functions (for local testing)
 if __name__ == "__main__":

@@ -115,7 +115,7 @@ def run_bond_stretch_calculation_mcp(smiles_string: str, atom1_idx: int, atom2_i
 def plot_energy_scan_image_mcp(bond_lengths: List[float], energies: List[float],
                                 title: str = "Energy vs. Bond Length Scan",
                                 xlabel: str = "Bond Length (Angstroms)",
-                                ylabel: str = "Energy (Hartree)") -> Dict[str, str]:
+                                ylabel: str = "Energy (Hartree)") -> {str, str}:
     """
     Generates a plot of energy versus bond length from provided data and returns it as a Base64 encoded PNG image.
 
