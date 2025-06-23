@@ -201,7 +201,7 @@ def visualize_molecule_3d_mcp(xyz_string: str, title: str = "Molecular Visualiza
         html_content = generate_3d_viewer_html(xyz_string, title)
         with open("optimized_geom_3d.html", "w") as f:
             f.write(html_content)
-        output = f"Optimized Methane 3D viewer HTML saved in /Users/lixinlu/Documents/mcp_server/optimized_methane_3d.html. Please open it in browser..."
+        output = f"Optimized Methane 3D viewer HTML saved in /Users/lixinlu/Documents/mcp_server/optimized_geom_3d.html. Please open it in browser..."
         return TextContent(
             type="text",
             text=output
